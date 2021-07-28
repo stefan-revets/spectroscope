@@ -1,0 +1,427 @@
+#+TITLE: Home-made spectroscope and solar spectrum
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [10pt,a4paper,titlepage]
+#+LATEX_HEADER: \def\today{\number\day\space\ifcase\month\or January\or February\or March\or April\or May\or June\or July\or August\or September\or October\or November\or December\fi \space \number\year}
+#+LATEX_HEADER: \usepackage{lmodern}
+#+LATEX_HEADER: \usepackage{amssymb,amsmath}
+#+LATEX_HEADER: \usepackage{parskip}
+#+LATEX_HEADER: \usepackage[margin=1in]{geometry}
+#+LATEX_HEADER: \usepackage[round]{natbib}
+#+LATEX_HEADER: \usepackage{fancyhdr}
+#+LATEX_HEADER: \usepackage{titling}
+#+LATEX_HEADER: \usepackage[squaren,cdot]{SIunits}
+#+LATEX_HEADER: \usepackage{booktabs}
+#+LATEX_HEADER: \pagestyle{fancy}
+#+LATEX_HEADER: \renewcommand{\footrulewidth}{0.4pt}
+#+LATEX_HEADER: \lhead{}
+#+LATEX_HEADER: \rhead{}
+#+LATEX_HEADER: \lfoot{Home Spectroscopy}
+#+LATEX_HEADER: \cfoot{\thepage}
+#+LATEX_HEADER: \rfoot{\thedate}
+#+LATEX_HEADER_EXTRA: \author{Stefan Revets}
+#+LATEX_HEADER_EXTRA: \pretitle{\flushleft\LARGE\bfseries\vskip 80mm}
+#+LATEX_HEADER_EXTRA: \posttitle{\par}
+#+LATEX_HEADER_EXTRA: \preauthor{\flushleft}
+#+LATEX_HEADER_EXTRA: \postauthor{\par}
+#+LATEX_HEADER_EXTRA: \predate{\flushleft}
+#+LATEX_HEADER_EXTRA: \postdate{\par{In Progress}}
+#+OPTIONS: ^:{}
+
+* Introduction
+A spectroscope is in principle a simple instrument: a slit, a
+collimator, a prism or a grating, and a viewing telescope or a camera
+is all that is required. Now that quality gratings are readily
+available, it is rather easy to construct an instrument with
+surprisingly high resolving powers.
+
+Having bought a \unit{30}{\milli\metre} grating with
+\unit{600}{\per\milli\metre} and blazed for a wavelength of
+\unit{500}{\nano\metre} as well as a \unit{30}{\milli\metre} diameter
+achromatic lens with a focal length of \unit{135}{\milli\metre} from
+Edmund Scientific, and having an Antares finderscope, I only had to
+find a way to make a slit.
+
+The very richness of detail and of course the fact that it is readily
+available with a profusion of light makes the sun a very attractive
+and engrossing subject. An impressive image of the solar spectrum with
+its multitude of Fraunhofer absorption lines resides here:
+https://www.noao.edu/image_gallery/html/im0600.html.
+
+* Theory
+Considerations through physical optics easily yield the grating equation
+\begin{equation}
+\label{eqn:grating}
+\sin \theta_{\lambda} = \sin \theta_i + n \frac{\lambda}{d}
+\end{equation}
+in which \theta_{i} is the angle of incidence on the grating, $n$ the
+order of the reflection, $d$ the spacing between the grooves, and
+\theta_{\lambda} the angle of reflection of light of wavelength \lambda.
+
+\citet{maystre12:properties} gives a rigorous derivation of this
+equation starting from Maxwell's equations.
+
+* Construction Details
+** Slit
+The width of the slit has a major effect on the definition of any
+emission of absorption lines in a spectrum
+\citep{schuster05:spectroscope,vancittert30:spaltbreite,vancittert31:spaltbreite}. The
+derivations by \citet{vancittert30:spaltbreite} eventually come to the
+conclusion that the optimum width of the slit depends on the focal
+ratio of the collimator, the wavelength, and (in)coherence of the
+light beam hitting the slit. For incoherent light, he obtains
+\begin{equation}
+w = F \lambda
+\end{equation}
+where $F$ is the F-number of the collimator. For coherent light, he
+obtains double this number.
+
+In principle, for my bits and pieces at hand, this translates to
+\begin{equation}
+w = F \lambda = \frac{\unit{135}{\milli\metre}}{\unit{30}{\milli\metre}} \unit{500}{\nano\metre} = \unit{2.25}{\micro\metre}
+\end{equation}
+
+In practice, such fine slits are beyond reach, and we are looking at
+widths in the order of 10's of \micro\metre. Here, a couple of razor
+blades proved to be very effective: one blade is glued down on a
+support (a piece of hardboard with a \unit{5}{\milli\metre} wide hole)
+with the other blade held down under a cardboard sleeve. This
+arrangement allows, by trial and error, to bring the edges of the
+blades as closely and as parallel as possible until a satisfactory
+image can be made.
+
+** Goniometre
+Because I am interested in being able to determine the wavelength of
+any given line, a means of measuring the angle of reflection is needed
+as well. To do that, and in particular, with a sufficient precision, I
+constructed a goniometre with a \unit{500}{\milli\metre} carrier
+arm. That length allows the drawing of an angular scale and a vernier
+with a read-out precision of \unit{0.01}{\degree}. Both the graduation
+arc and the vernier have been generated after calculation by using the
+capabilities of PSTricks and \LaTeX.
+
+* Calculations
+:PROPERTIES:
+:session: *R*
+:cache: yes
+:results: output graphics
+:exports: both
+:END:
+
+** Calibration and test trials
+We will need some R libraries, so let's load these first
+#+BEGIN_SRC R :results none
+  library("dplyr")
+  library("ggplot2")
+  library("magrittr")
+#+END_SRC
+
+It will be useful later on to have various parameters and constants of
+the grating in a single spot. According to Edmund Scientific, the
+characteristics of the grating are
+#+BEGIN_SRC R :results none
+  grooves <- 600
+  spacing <- 1 / (grooves * 1e-6)
+  width <- 30
+  blaze_lambda <- 500
+
+  deg2rad <- pi / 180
+  rad2deg <- 180 / pi
+#+END_SRC
+
+And here is a set of angular measurements of a number of lines seen in
+the solar spectrum with my spectroscope. 
+
+#+CAPTION: Angular measurements of solar absorption lines
+#+TBLNAME: line_measures
+| element | wavelength | angle |
+|---------+------------+-------|
+| O2      |    686.719 | 91.50 |
+| H       |    656.281 | 89.27 |
+| O2      |    627.661 | 87.32 |
+| Na      |    589.592 | 84.87 |
+| Na      |    588.995 | 84.82 |
+| Fe      |    561.564 | 83.17 |
+| Mg      |    552.841 | 82.67 |
+| Fe      |    542.969 | 82.09 |
+| Fe      |    537.149 | 81.74 |
+| Fe      |    532.804 | 81.47 |
+| Fe      |    527.039 | 81.15 |
+| Fe      |    522.715 | 80.90 |
+| Mg      |    518.362 | 80.66 |
+| Mg      |    517.270 | 80.60 |
+| Fe      |    516.891 | 80.57 |
+| Mg      |    516.733 | 80.58 |
+| Fe      |    504.176 | 79.87 |
+| Fe      |    495.761 | 79.42 |
+| H       |    486.134 | 78.89 |
+| Fe      |    466.814 | 77.85 |
+| Fe      |    448.225 | 76.89 |
+| Fe      |    440.475 | 76.49 |
+| Fe      |    438.354 | 76.38 |
+| H       |    434.047 | 76.16 |
+| Fe      |    432.576 | 76.09 |
+| CH      |      431.3 | 76.03 |
+| Fe      |    430.790 | 76.00 |
+| Fe      |    427.176 | 75.81 |
+| Fe      |    426.047 | 75.76 |
+| Ca      |    422.673 | 75.59 |
+| Fe      |    414.387 | 75.16 |
+| H       |    410.175 | 74.95 |
+
+Now, we have to bear in mind some construction idiosyncracies. The
+goniometre starts its \unit{0}{\degree} reading on the incidence axis
+of the spectroscope. That is to say, on the line from the slit to the
+grating, while the \unit{90}{\degree} point is the perpendicular to
+the slit-grating line. The pivot point coincides, to the best of my
+ability to ensure this, with the surface of the grating where it meets
+the slit-grating line. As a result, it is necessary to subtract the
+inclination angle from the values of the measured line angles.
+
+At the time, the reflection angle of the slit was measured as
+\unit{57.00}{\degree}. This is double the inclination angle of the
+light incoming into the grating. Assuming, of course, that the
+slit-grating axis lies indeed on the \unit{0}{\degree} line of the
+goniometre. We may have some opportunity of assessing how close we got
+to this assumption by looking at the amount and distribution of the
+errors.
+
+Let's bring in these measurements, as well as the measured reflection
+angle of the slit and apply the grating equation, so that we can
+assess how well and how accurate the setup works.
+
+#+BEGIN_SRC R :var measured=line_measures inclination=28.50 :results none
+  inclination <- inclination * deg2rad
+  sin_i <- sin(inclination)
+
+  measured %<>%
+      mutate(angle_m = deg2rad * angle - inclination,
+             angle_p = asin(wavelength / spacing + sin_i),
+             delta = rad2deg * (angle_m - angle_p))
+#+END_SRC
+
+Now that we have calculated the expected reflection angles of all the
+lines, let's see how close the actual measurements are. A simple plot
+reveals the relation
+
+#+BEGIN_SRC R :height 4 :file output/reflection_test1.pdf
+  ggplot(measured) +
+      geom_point(aes(wavelength, delta)) +
+      labs(title = "Reflection Angles of Fraunhofer Lines",
+           x = "Wave length (nm)",
+           y = "Discrepancy (degree)")
+#+END_SRC
+
+Clearly, there is a linear dependence between the angle discrepancy
+and wavelength. That tells us that something is not quite right.  So
+let us try and use these measurements to see how close we are to the
+grating and settings parameters, by a simple regression analysis.
+
+#+BEGIN_SRC R
+  lm(sin(angle_m) ~ wavelength, data = measured)
+#+END_SRC
+
+#+RESULTS[b4c2d8c3fe96dafdde47a96c32f9f549f5cb3a34]:
+: 
+: Call:
+: lm(formula = sin(angle_m) ~ wavelength, data = measured)
+: 
+: Coefficients:
+: (Intercept)   wavelength  
+:   0.4783901    0.0006008
+
+These numbers suggest that the grating has
+\unit{601}{\per\milli\metre} rather than 600 grooves and that the
+inclination angle would be slightly higher and amount to
+\unit{28.58}{\degree}.  If we recalculate with these numbers instead,
+particularly after engaging in a little trial and error with the
+inclination angle (using \unit{28.543}{\degree} seems to reduce the
+overall deviations the most), we get
+
+#+BEGIN_SRC R :var inclination=28.543 :height 4 :file output/reflection_test2.pdf
+  inclination <- inclination * deg2rad
+  sin_i <- sin(inclination)
+  grooves <- 601
+  spacing <- 1 / (grooves * 1e-6)
+
+  measured %<>%
+      mutate(angle_m = deg2rad * angle - inclination,
+             angle_p = asin(wavelength / spacing + sin_i),
+             delta = rad2deg * (angle_m - angle_p))
+
+  ggplot(measured) +
+      geom_point(aes(wavelength, delta)) +
+      labs(title = "Reflection Angles of Fraunhofer Lines",
+           x = "Wave length (nm)",
+           y = "Discrepancy (degree)")
+
+#+END_SRC
+
+A check with a regression should tell us how good these new numbers
+are
+#+BEGIN_SRC R
+  lm(sin(angle_m) ~ wavelength, data = measured)
+#+END_SRC
+
+#+RESULTS[b4c2d8c3fe96dafdde47a96c32f9f549f5cb3a34]:
+: 
+: Call:
+: lm(formula = sin(angle_m) ~ wavelength, data = measured)
+: 
+: Coefficients:
+: (Intercept)   wavelength  
+:   0.4776201    0.0006014
+
+This is a pleasing result: the actual errors lie in the $\pm$
+\unit{0.02}{\degree} interval, which is just a little higher than the
+highest resolution, \unit{0.01}{\degree}, the vernier can provide. Out
+of 32 measurements: 75% lie within the precision the vernier can
+give. Considering that \unit{0.01}{\degree} translates to
+\unit{0.15}{\nano\metre} (around \unit{500}{\nano\metre}), the setup
+is surprisingly effective.
+
+I suspect that using a laser printer to generate the goniometre
+scale and vernier will give a cleaner, more crisp definition of the
+scale lines and improve the reading accuracy just that little bit
+more.
+
+** Identification of absorption lines
+Now that we know that the set-up works rather well, we can use it to
+locate and try to identify the multitude of lines in the solar
+spectrum. \citet{moore-al66:solar} list some 24000 lines in the solar
+spectrum, of which some 75% could be attributed. At the time, the lines
+of 63 elements could be identified. Clearly, a simple 600 grooves
+grating will not yield such an overwhelming amount of lines. Let's
+adopt a more modest, simpler approach.
+
+\citet{reader-corliss80:elements} provided a list of wavelengths of
+the emission lines of most elements. Their extensive list was captured
+and turned into a machine-readable catalogue and made available by
+Paul Kuin (NASA/ADC) and hosted on https://cdsarc.u-strasbg.fr/viz-bin/cat/VI/16
+
+#+CAPTION: Byte-by-byte Description of file catalog.dat (46663 entries)
+| Bytes | Format | Units | Label    | Explanations                            |
+|-------+--------+-------+----------+-----------------------------------------|
+|   1-2 | I2     | ---   | Z        | atomic number                           |
+|   4-5 | I2     | ---   | ion      | ion                                     |
+|  7-11 | I5     | ---   | Int      | line intensity on arbitrary scale       |
+| 13-16 | A4     | ---   | line     | notes on spectral line                  |
+| 18-27 | F10.3  | 0.1nm | wavel    | wavelength in Angstroms                 |
+|    29 | A1     | ---   | Air_Vac  | flag for wavelength in Air or Vacuum    |
+| 31-32 | A2     | ---   | Element  | symbol for element                      |
+| 34-37 | A4     | ---   | Spectrum | spectrum of element                     |
+| 39-43 | A5     | ---   | oxide    | spectral line belongs to oxide          |
+| 45-49 | I5     | 0.1nm | bwavel   | truncated wavelength                    |
+| 51-53 | A3     | ---   | note     | no explanation for this field was given |
+| 55-56 | I2     | ---   | refZ     | reference section                       |
+| 57-58 | I2     | ---   | ref      | reference number in section             |
+
+From this list, I selected a number of elements more likely to show
+significant absorption lines, (H, Na, Mg, Si, Ca, Sc, Ti, V, Cr, Mn,
+Fe, Co, Ni, Sr, Y, Ba) and reduced the list further so that it
+contains only wavelengths between
+\unit{400-750}{\nano\metre}. Clearly, I won't be able to see lines for
+every single entry. But it should be possible to predict the
+observation angle with my setup for each of the entries, and so allow
+me to find out what is and what isn't visible.
+
+A neat way of reducing the data to what I am interested in is through
+an AWK script. Although the data is presented in a Fortran-type
+format, i.e., columnar, there is a possibility of defining fields by
+their width, rather than the usual AWK field separator
+character. While doing so, let's also change the spelling of the
+elements to their normal mixed case, rather than the Fortran upper
+case.
+
+#+BEGIN_SRC awk :in-file data/catalog.dat :file output/fraunhofer.dat
+  BEGIN{FIELDWIDTHS = "2 3 6 5 11 2 3 5 6 6 4 3 2"
+        print "wavelength,element,ion,intensity"}
+
+  $7 ~ /H |NA|MG|SI|CA|SC|TI|V |CR|MN|FE|CO|NI|SR|Y |BA/ && $5 > 4000 && $5 < 7500 {
+      gsub(/ /,"",$3)
+      gsub(/ /,"",$7)
+      gsub(/ /,"",$8)
+      gsub("NA","Na",$7)
+      gsub("MG","Mg",$7)
+      gsub("SI","Si",$7)
+      gsub("CA","Ca",$7)
+      gsub("SC","Sc",$7)
+      gsub("TI","Ti",$7)
+      gsub("CR","Cr",$7)
+      gsub("MN","Mn",$7)
+      gsub("FE","Fe",$7)
+      gsub("CO","Co",$7)
+      gsub("NI","Ni",$7)
+      gsub("SR","Sr",$7)
+      gsub("BA","Ba",$7)
+      print $5/10 "," $7 "," $8 "," $3
+  }
+#+END_SRC
+
+It is a straightforward matter to import this csv file, predict the
+expected reflection angle for a given incidence angle. As there are
+still some 3275 entries, there is little point in showing the output
+here, so let's send the processing results to a separate output file.
+
+#+BEGIN_SRC R :var inclination=28.277 :results none
+  sin_i <- sin(deg2rad * inclination)
+
+  fraunhofer <- read.csv("output/fraunhofer.dat",
+                         stringsAsFactors = FALSE)
+  fraunhofer %<>%
+      mutate(angle = asin(wavelength / spacing + sin_i),
+             angle = round(angle * rad2deg + inclination, 2)
+             ) %>%
+      arrange(wavelength)
+
+  write.csv(fraunhofer, "output/fraunhofer_pred.dat",
+            row.names = FALSE)
+
+#+END_SRC
+
+What we can do here, however, is use Sqlite to access and look for
+some salient information.
+
+#+BEGIN_SRC sqlite :db spectrum.db
+  .mode csv
+  .headers on
+  drop table if exists fraunhofer;
+  .import output/fraunhofer_pred.dat fraunhofer
+  .mode column
+
+  select * from fraunhofer where element = "H";
+#+END_SRC
+
+#+RESULTS[40e18ddd9616f7e70dfddf7514d71154cd4dee39]:
+: wavelength  element     ion         intensity   angle     
+: ----------  ----------  ----------  ----------  ----------
+: 410.174     H           I           15          74.35     
+: 434.047     H           I           30          75.55     
+: 486.133     H           I           80          78.26     
+: 656.272     H           I           120         88.52     
+: 656.285     H           I           180         88.52     
+
+A slightly different example is to look at what is present between the Na D_1 and D_2 lines:
+#+BEGIN_SRC sqlite :db spectrum.db
+  .mode column
+  .headers on
+  select * from fraunhofer where wavelength > 588.9 and wavelength < 589.6;
+#+END_SRC
+
+#+RESULTS[4fd758d3fff58a32f950fdd3d07b779152dd24dd]:
+: wavelength  element     ion         intensity   angle     
+: ----------  ----------  ----------  ----------  ----------
+: 588.995     Na          I           32          84.14     
+: 589.115     Ti          IV          7           84.15     
+: 589.191     Fe          III         15          84.15     
+: 589.288     Ni          I           10          84.16     
+: 589.394     Y                       24          84.17     
+: 589.592     Na          I           16          84.18     
+
+With the setup, the Ni line is clearly resolved from the two Na lines.
+
+
+* Epilogue
+
+
+\bibliographystyle{plainnat}
+\bibliography{spectroscope}
