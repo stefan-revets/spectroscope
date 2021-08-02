@@ -60,6 +60,105 @@ order of the reflection, $d$ the spacing between the grooves, and
 \citet{maystre12:properties} gives a rigorous derivation of this
 equation starting from Maxwell's equations.
 
+* Diffraction Theory
+Diffraction of light at plane apertures was first successfully
+described and analysed by \citet{fresnel19:diffraction}. Subsequent
+analyses uncovered additional complexities, in particular with
+accurate calculation of intensity patterns. \citet{mielenz98:fresnel}
+pointed out the on-going limitations and inaccuracies in the
+presentation of the theory in standard textbooks. In particular, and
+of immediate relevance here, he shows the problems surrounding the
+calculations for apertures bounded by straight lines (e.g.,
+rectangles, half-planes, slits).
+
+** The Fresnel diffraction integral
+The scalar wave function at a plane aperture can be expressed by the
+Rayleigh-Sommerfeld integrals
+
+\begin{eqnarray}
+\label{eqn:rayleigh-sommerfeld}
+U^p_{RS}(P) & = & -\frac{A_{sph}}{2 \pi} \int dQ \frac{e^{i k(P_0 Q + QP)}}{P_0 Q \cdot QP}\bigg(i k - \frac{1}{P_0 Q} \bigg) \frac{\partial P_0 Q}{\partial n} \\
+U^s_{RS}(P) & = & -\frac{A_{sph}}{2 \pi} \int dQ \frac{e^{i k(P_0 Q + QP)}}{P_0 Q \cdot QP}\bigg(i k - \frac{1}{Q P} \bigg) \frac{\partial Q P}{\partial n}
+\end{eqnarray}
+where $P_0$ is the location of a point source emitting a spherical
+wave with amplitude $A_{sph}$ and wave number $k = 2 \pi / \lambda$;
+$Q$ is a point in the aperture, $dQ$ is the surface element at $Q$,
+$n$ the aperture normal pointing away from the source, and $P$ the
+observation point.
+
+The Fresnel approach deals with situations in which $P_0$ and $P$ are
+at finite distances from the aperture, but large compared to the
+wavelength and to the dimensions of the aperture. Under those
+conditions, the distances $P_0 Q$ and $QP$ and their normal
+derivatives hardly vary inside the aperture. These can therefore be
+replaced by values at an arbitrary chosen reference point $O$ inside
+the aperture. This leads to
+
+\begin{equation}
+U^p_{RS}(P) \approx -\frac{i k A_{sph}}{2 \pi} \frac{\partial P_0 O}{\partial n} \frac{e^{i k (P_0 O + OP)}}{P_0 O \cdot OP} \int dQ e^{i k \Delta(Q)}
+\end{equation}
+where $\Delta(Q) = (P_0 Q + QP) - (P_0 O + OP)$
+
+Let's set the coordinates so that
+\begin{eqnarray*}
+O   & = & (0, 0, 0) \\
+P_0 & = & (x_0, y_0, z_0) \\
+Q   & = & (\xi, \eta, 0) \\
+P   & = & (x, y, z)
+\end{eqnarray*}
+and set
+\begin{eqnarray*}
+l_0 & = & -\frac{x_0}{r_0} \\
+m_0 & = & -\frac{y_0}{r_0} \\
+l   & = & \frac{x}{r} \\
+m   & = & \frac{y}{r} \\
+r_0 & = & \sqrt{x_0^2 + y_0^2 + z_0^2} \\
+r   & = & \sqrt{x^2 + y^2 + z^2}
+\end{eqnarray*}
+the direction cosines of the vectors $P_0 Q$ and $OP$, so that we get
+for $\Delta(Q)$
+\begin{equation}
+\Delta(Q) = -[(l - l_0) \xi + (m - m_0) \eta] + \frac{1}{2 r_0}[(\xi^2 + \eta^2) - (l_0 \xi + m_0 \eta)^2] + \frac{1}{2 r}[(\xi^2 + \eta^2) - (l \xi + m \eta)^2] + \epsilon(\xi, \eta)
+\end{equation}
+with $\epsilon(\xi, \eta)$ the residual error due to the neglect of
+third and higher orders in $\xi$ and $\eta$.
+We also obtain for the normal derivative
+\begin{equation}
+\frac{\partial P_0 Q}{\partial n} = -\frac{\partial r_0}{\partial z_0} = -\frac{z_0}{r_0} = -\cos \theta_0
+\end{equation}
+so that we end with
+\begin{equation}
+\label{eqn:reduced-rayleigh}
+U^p_{RS}(P) \approx -\frac{i k A_{sph} \cos \theta_0}{2 \pi r_0 r} e^{i k (r_0 + r)} \int dQ e^{i k \Delta(Q)}
+\end{equation}
+The equivalent form for $U^s_{RS}(P)$ is essentially the same, but for
+$\cos \theta$ replacing $-\cos \theta_0$. As the diffracted light is
+confined to a narrow angle around the central direction $P_0 Q$, the
+differences are negligable. In other words, Fresnel diffraction is
+independent of polarisation.
+
+We can write this last equation also as
+\begin{equation}
+U_F(P) = -U_0(P) \cos \theta_0 I_F(P)
+\end{equation}
+where
+\begin{equation}
+U_)(P) = A_{sph} \frac{e^{i k (r_0 + r)}}{r_0 + r} = \sqrt{E_0(P)} e^{i k (r_0 + r)}
+\end{equation}
+is the geometric field at the observation point $P$, as indicated by
+the Huygens principle, while
+\begin{equation}
+I_F(P) = -\frac{i k (r_0 + r)}{2 \pi r_0 r} \int dQ e^{i k \Delta(Q)}
+\end{equation}
+is the modification of the geometric field by diffraction ($E_0(P)$ is
+the normally incident irradiance at $P$, and $-\cos \theta_0$ is the
+inclination factor following Lambert's law).
+
+** Application to rectangular aperture
+
+
+
+
 * Construction Details
 ** Slit
 The width of the slit has a major effect on the definition of any
@@ -113,6 +212,7 @@ We will need some R libraries, so let's load these first
   library("dplyr")
   library("ggplot2")
   library("magrittr")
+  library("pracma")
 #+END_SRC
 
 It will be useful later on to have various parameters and constants of
@@ -203,13 +303,16 @@ Now that we have calculated the expected reflection angles of all the
 lines, let's see how close the actual measurements are. A simple plot
 reveals the relation
 
-#+BEGIN_SRC R :height 4 :file output/reflection_test1.pdf
+#+BEGIN_SRC R :height 4 :file ../output/reflection_test1.pdf
   ggplot(measured) +
       geom_point(aes(wavelength, delta)) +
       labs(title = "Reflection Angles of Fraunhofer Lines",
            x = "Wave length (nm)",
            y = "Discrepancy (degree)")
 #+END_SRC
+
+#+RESULTS[726112933b688c36e9f970f2b94a355e479cebd2]:
+[[file:../output/reflection_test1.pdf]]
 
 Clearly, there is a linear dependence between the angle discrepancy
 and wavelength. That tells us that something is not quite right.  So
@@ -237,7 +340,7 @@ particularly after engaging in a little trial and error with the
 inclination angle (using \unit{28.543}{\degree} seems to reduce the
 overall deviations the most), we get
 
-#+BEGIN_SRC R :var inclination=28.543 :height 4 :file output/reflection_test2.pdf
+#+BEGIN_SRC R :var inclination=28.543 :height 4 :file ../output/reflection_test2.pdf
   inclination <- inclination * deg2rad
   sin_i <- sin(inclination)
   grooves <- 601
@@ -255,6 +358,9 @@ overall deviations the most), we get
            y = "Discrepancy (degree)")
 
 #+END_SRC
+
+#+RESULTS[a5c9115ba05150aa2c78f19c4a4a027798d825b4]:
+[[file:../output/reflection_test2.pdf]]
 
 A check with a regression should tell us how good these new numbers
 are
@@ -332,7 +438,7 @@ character. While doing so, let's also change the spelling of the
 elements to their normal mixed case, rather than the Fortran upper
 case.
 
-#+BEGIN_SRC awk :in-file data/catalog.dat :file output/fraunhofer.dat
+#+BEGIN_SRC awk :in-file ../data/catalog.dat :file ../output/fraunhofer.dat
   BEGIN{FIELDWIDTHS = "2 3 6 5 11 2 3 5 6 6 4 3 2"
         print "wavelength,element,ion,intensity"}
 
@@ -365,7 +471,7 @@ here, so let's send the processing results to a separate output file.
 #+BEGIN_SRC R :var inclination=28.277 :results none
   sin_i <- sin(deg2rad * inclination)
 
-  fraunhofer <- read.csv("output/fraunhofer.dat",
+  fraunhofer <- read.csv("../output/fraunhofer.dat",
                          stringsAsFactors = FALSE)
   fraunhofer %<>%
       mutate(angle = asin(wavelength / spacing + sin_i),
@@ -373,7 +479,7 @@ here, so let's send the processing results to a separate output file.
              ) %>%
       arrange(wavelength)
 
-  write.csv(fraunhofer, "output/fraunhofer_pred.dat",
+  write.csv(fraunhofer, "../output/fraunhofer_pred.dat",
             row.names = FALSE)
 
 #+END_SRC
@@ -381,11 +487,11 @@ here, so let's send the processing results to a separate output file.
 What we can do here, however, is use Sqlite to access and look for
 some salient information.
 
-#+BEGIN_SRC sqlite :db spectrum.db
+#+BEGIN_SRC sqlite :db ../output/spectrum.db
   .mode csv
   .headers on
   drop table if exists fraunhofer;
-  .import output/fraunhofer_pred.dat fraunhofer
+  .import ../output/fraunhofer_pred.dat fraunhofer
   .mode column
 
   select * from fraunhofer where element = "H";
@@ -401,7 +507,7 @@ some salient information.
 : 656.285     H           I           180         88.52     
 
 A slightly different example is to look at what is present between the Na D_1 and D_2 lines:
-#+BEGIN_SRC sqlite :db spectrum.db
+#+BEGIN_SRC sqlite :db ../output/spectrum.db
   .mode column
   .headers on
   select * from fraunhofer where wavelength > 588.9 and wavelength < 589.6;
