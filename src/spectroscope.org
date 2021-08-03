@@ -55,12 +55,15 @@ Considerations through physical optics easily yield the grating equation
 \end{equation}
 in which \theta_{i} is the angle of incidence on the grating, $n$ the
 order of the reflection, $d$ the spacing between the grooves, and
-\theta_{\lambda} the angle of reflection of light of wavelength \lambda.
+\theta_{\lambda} the angle of reflection of light of wavelength
+\lambda.  \citet{maystre12:properties} gives a rigorous derivation of
+this equation starting from Maxwell's equations.
 
-\citet{maystre12:properties} gives a rigorous derivation of this
-equation starting from Maxwell's equations.
+The role and effects of a narrow slit on the behaviour of light, and
+the image of the spectrum of interest to us here, is surprisingly
+involved and entails a fascinating excursion into the theoretical
+considerations of diffraction.
 
-* Diffraction Theory
 Diffraction of light at plane apertures was first successfully
 described and analysed by \citet{fresnel19:diffraction}. Subsequent
 analyses uncovered additional complexities, in particular with
@@ -75,11 +78,11 @@ rectangles, half-planes, slits).
 The scalar wave function at a plane aperture can be expressed by the
 Rayleigh-Sommerfeld integrals
 
-\begin{eqnarray}
+\begin{align}
 \label{eqn:rayleigh-sommerfeld}
-U^p_{RS}(P) & = & -\frac{A_{sph}}{2 \pi} \int dQ \frac{e^{i k(P_0 Q + QP)}}{P_0 Q \cdot QP}\bigg(i k - \frac{1}{P_0 Q} \bigg) \frac{\partial P_0 Q}{\partial n} \\
-U^s_{RS}(P) & = & -\frac{A_{sph}}{2 \pi} \int dQ \frac{e^{i k(P_0 Q + QP)}}{P_0 Q \cdot QP}\bigg(i k - \frac{1}{Q P} \bigg) \frac{\partial Q P}{\partial n}
-\end{eqnarray}
+U^p_{RS}(P) & = -\frac{A_{sph}}{2 \pi} \int dQ \frac{e^{i k(P_0 Q + QP)}}{P_0 Q \cdot QP}\bigg(i k - \frac{1}{P_0 Q} \bigg) \frac{\partial P_0 Q}{\partial n} \\
+U^s_{RS}(P) & = -\frac{A_{sph}}{2 \pi} \int dQ \frac{e^{i k(P_0 Q + QP)}}{P_0 Q \cdot QP}\bigg(i k - \frac{1}{Q P} \bigg) \frac{\partial Q P}{\partial n}
+\end{align}
 where $P_0$ is the location of a point source emitting a spherical
 wave with amplitude $A_{sph}$ and wave number $k = 2 \pi / \lambda$;
 $Q$ is a point in the aperture, $dQ$ is the surface element at $Q$,
@@ -100,24 +103,25 @@ U^p_{RS}(P) \approx -\frac{i k A_{sph}}{2 \pi} \frac{\partial P_0 O}{\partial n}
 where $\Delta(Q) = (P_0 Q + QP) - (P_0 O + OP)$
 
 Let's set the coordinates so that
-\begin{eqnarray*}
-O   & = & (0, 0, 0) \\
-P_0 & = & (x_0, y_0, z_0) \\
-Q   & = & (\xi, \eta, 0) \\
-P   & = & (x, y, z)
-\end{eqnarray*}
+\begin{align*}
+O   & = (0, 0, 0) \\
+P_0 & = (x_0, y_0, z_0) \\
+Q   & = (\xi, \eta, 0) \\
+P   & = (x, y, z)
+\end{align*}
 and set
-\begin{eqnarray*}
-l_0 & = & -\frac{x_0}{r_0} \\
-m_0 & = & -\frac{y_0}{r_0} \\
-l   & = & \frac{x}{r} \\
-m   & = & \frac{y}{r} \\
-r_0 & = & \sqrt{x_0^2 + y_0^2 + z_0^2} \\
-r   & = & \sqrt{x^2 + y^2 + z^2}
-\end{eqnarray*}
+\begin{align*}
+l_0 & = -\frac{x_0}{r_0} \\
+m_0 & = -\frac{y_0}{r_0} \\
+l   & = \frac{x}{r} \\
+m   & = \frac{y}{r} \\
+r_0 & = \sqrt{x_0^2 + y_0^2 + z_0^2} \\
+r   & = \sqrt{x^2 + y^2 + z^2}
+\end{align*}
 the direction cosines of the vectors $P_0 Q$ and $OP$, so that we get
 for $\Delta(Q)$
 \begin{equation}
+\label{eqn:delta-Q}
 \Delta(Q) = -[(l - l_0) \xi + (m - m_0) \eta] + \frac{1}{2 r_0}[(\xi^2 + \eta^2) - (l_0 \xi + m_0 \eta)^2] + \frac{1}{2 r}[(\xi^2 + \eta^2) - (l \xi + m \eta)^2] + \epsilon(\xi, \eta)
 \end{equation}
 with $\epsilon(\xi, \eta)$ the residual error due to the neglect of
@@ -128,7 +132,7 @@ We also obtain for the normal derivative
 \end{equation}
 so that we end with
 \begin{equation}
-\label{eqn:reduced-rayleigh}
+\label{eqn:fresnel-base}
 U^p_{RS}(P) \approx -\frac{i k A_{sph} \cos \theta_0}{2 \pi r_0 r} e^{i k (r_0 + r)} \int dQ e^{i k \Delta(Q)}
 \end{equation}
 The equivalent form for $U^s_{RS}(P)$ is essentially the same, but for
@@ -137,27 +141,93 @@ confined to a narrow angle around the central direction $P_0 Q$, the
 differences are negligable. In other words, Fresnel diffraction is
 independent of polarisation.
 
-We can write this last equation also as
+We can consider equation \ref{eqn:fresnel-base} as the basic Fresnel
+diffraction integral: we write it as
 \begin{equation}
 U_F(P) = -U_0(P) \cos \theta_0 I_F(P)
 \end{equation}
 where
 \begin{equation}
-U_)(P) = A_{sph} \frac{e^{i k (r_0 + r)}}{r_0 + r} = \sqrt{E_0(P)} e^{i k (r_0 + r)}
+U_0(P) = A_{sph} \frac{e^{i k (r_0 + r)}}{r_0 + r} = \sqrt{E_0(P)} e^{i k (r_0 + r)}
 \end{equation}
 is the geometric field at the observation point $P$, as indicated by
 the Huygens principle, while
 \begin{equation}
+\label{eqn:diffraction-integral}
 I_F(P) = -\frac{i k (r_0 + r)}{2 \pi r_0 r} \int dQ e^{i k \Delta(Q)}
 \end{equation}
 is the modification of the geometric field by diffraction ($E_0(P)$ is
 the normally incident irradiance at $P$, and $-\cos \theta_0$ is the
 inclination factor following Lambert's law).
 
-** Application to rectangular aperture
+** The rectangular aperture
+We can apply these equations to the particular case of a rectangular
+opening of width $2 w$ and height $2 h$. A first useful step is to
+choose a more effective coordinate system, so that we can rewrite
+equation \ref{eqn:diffraction-integral} as the product of two
+independent Fresnel integrals, i.e.,
+\begin{equation}
+\label{eqn:fresnel-independent}
+I_F(P) \propto \int d \xi e^{i a \xi^2} \int d \eta e^{i b \eta^2}
+\end{equation}
+This can be achieved by placing the origin of the coordinate system at
+a point $M$, where the aperture plane intersects the line between
+source and observation point ($P_0 P$):
+\begin{equation*}
+M = (x_M, y_M, 0), \quad x_M = \frac{x_0 z - x z_0}{z - z_0}, \quad y_M = \frac{y_0 z - y z_0}{z - z_0}
+\end{equation*}
+which yields
+\begin{align*}
+l_0' = \frac{x_0 - x_M}{r_0'} & = l' = \frac{x - x_M}{r'} \\
+m_0' = \frac{y_0 - y_M}{r_0'} & = m' = \frac{y - y_M}{r'} \\
+r_0' = \frac{-z_0}{\cos \theta_M} & , r' = \frac{z}{\cos \theta_M}
+\end{align*}
+which then simplifies equation \ref{eqn:delta-Q} to
+\begin{equation}
+\Delta(Q) = \frac{1}{2 \rho'} \bigg[ (\xi - x_M)^2 + (\eta - y_M)^2 - [l_0' (\xi - x_M) + m_0' (\eta - y_M)]^2 \bigg]
+\end{equation}
+where
+\begin{equation*}
+\rho' = \frac{r_0' r'}{r_0' + r'} = \frac{-z z_0}{(z - z_0) \cos \theta_M}
+\end{equation*}
 
+*** Paraxial case
+If both the source and observation points $P_0$ and $P$ are close to
+the $z$-axis, then the direction cosines $l_0'$ and $m_0'$ will be
+small, and hence the squares very much smaller than 1. This results in
+the simplification of equation \ref{eqn:fresnel-base} to
+\begin{align}
+I_F(P) & \approx -\frac{i k}{2 \pi \rho'} \int_{-w}^w d \xi e^{i k (\xi - x_M)^2 / 2 \rho'} \int_{-h}^h d \eta e^{i k (\eta - y_M)^2 / 2 \rho'} \\
+ & = -\frac{i}{2}[F(s_+) - F(s_-)][F(t_+) - F(t_-)]
+\end{align}
+where
+\begin{align*}
+s_{\pm} & = \sqrt{\frac{k}{\pi \rho'}}(\pm w - x_M) \\
+t_{\pm} & = \sqrt{\frac{k}{\pi \rho'}}(\pm h - y_M) \\
+F(s) & = C(s) + i S(s) = \int_0^s d \sigma e^{i \pi \sigma^2 / 2}
+\end{align*}
+and $F(s)$ is the complex Fresnel integral.
 
+*** Off-axis source
+When a paraxial approximation is no longer tenable, that is to say,
+when the source is too far off the axial line, it is commonly
+suggested that a rotation of the coordinates can alleviate the
+situation, \citep[, for example]{born-wolf99:optics}. Placing the
+$x'$-axis along the projection of the $P_0 P$ line in the aperture
+plane does yield $m_0' = 0$ so that $I_F(P)$ is of the form of
+equation \ref{eqn:fresnel-independent}. However, the $x', y'$-axes
+are then no longer parallel to the edges of the aperture, and
+therefore the integral is no longer separable because of the
+dependences of the limits of the integrals on the coordinate of the
+other.
 
+\citet{mielenz98:fresnel} showed that any attempt to resolve the issue
+for rectangular apertures is doomed to fail. This failure can be
+generalised by observing that any orthogonal rotation will result in
+aperture edges which are no longer aligned with the axes, and
+therefore the separation of the integration limits cannot be complete.
+
+*** Application to a slit
 
 * Construction Details
 ** Slit
@@ -524,7 +594,6 @@ A slightly different example is to look at what is present between the Na D_1 an
 : 589.592     Na          I           16          84.18     
 
 With the setup, the Ni line is clearly resolved from the two Na lines.
-
 
 * Epilogue
 
