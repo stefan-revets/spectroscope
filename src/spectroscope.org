@@ -197,11 +197,13 @@ the $z$-axis, then the direction cosines $l_0'$ and $m_0'$ will be
 small, and hence the squares very much smaller than 1. This results in
 the simplification of equation \ref{eqn:fresnel-base} to
 \begin{align}
+\label{eqn:complex-fresnel}
 I_F(P) & \approx -\frac{i k}{2 \pi \rho'} \int_{-w}^w d \xi e^{i k (\xi - x_M)^2 / 2 \rho'} \int_{-h}^h d \eta e^{i k (\eta - y_M)^2 / 2 \rho'} \\
  & = -\frac{i}{2}[F(s_+) - F(s_-)][F(t_+) - F(t_-)]
 \end{align}
 where
 \begin{align*}
+\label{eqn:complex-fresnel-arguments}
 s_{\pm} & = \sqrt{\frac{k}{\pi \rho'}}(\pm w - x_M) \\
 t_{\pm} & = \sqrt{\frac{k}{\pi \rho'}}(\pm h - y_M) \\
 F(s) & = C(s) + i S(s) = \int_0^s d \sigma e^{i \pi \sigma^2 / 2}
@@ -228,6 +230,27 @@ aperture edges which are no longer aligned with the axes, and
 therefore the separation of the integration limits cannot be complete.
 
 *** Application to a slit
+The slit is a special case of the rectangular aperture, where the
+height is now arbitrarily large. Setting $h = \infty$ in equation
+\ref{eqn:complex-fresnel-arguments}, we may also assume that the
+source will be a long line parallel to the slot, so that we only have
+to calculate the diffraction pattern in the $xz$-plane. With these
+assumptions, we have
+\begin{align}
+t_{\pm} & = \pm \infty \\
+F(t_{\pm}) & = \pm \frac{1 + i}{2} \\
+F(t_+) - F(t_-) & = 1 + i
+\end{align}
+which reduces equation \ref{eqn:complex-fresnel} to
+\begin{align}
+I_F(P) & = \frac{1 - i}{2} (F(s_+) - F(s_-)) \\
+ & = \frac{1 - i}{2} \bigg[ (C(s_+) - C(s_-)) + i (S(s_+) - S(s_-)) \bigg]
+\end{align}
+and, since $y_0 = y = y_M = 0$
+\begin{align*}
+\theta_M & = \arctan \frac{x_0 - x_M}{z_0} \\
+x & = x_M + z \tan \theta_M
+\end{align*}
 
 * Construction Details
 ** Slit
@@ -492,8 +515,8 @@ Paul Kuin (NASA/ADC) and hosted on https://cdsarc.u-strasbg.fr/viz-bin/cat/VI/16
 | 57-58 | I2     | ---   | ref      | reference number in section             |
 
 From this list, I selected a number of elements more likely to show
-significant absorption lines, (H, Na, Mg, Si, Ca, Sc, Ti, V, Cr, Mn,
-Fe, Co, Ni, Sr, Y, Ba) and reduced the list further so that it
+significant absorption lines, (H, C, Na, Mg, Si, Ca, Sc, Ti, V, Cr,
+Mn, Fe, Co, Ni, Sr, Y, Ba) and reduced the list further so that it
 contains only wavelengths between
 \unit{400-750}{\nano\metre}. Clearly, I won't be able to see lines for
 every single entry. But it should be possible to predict the
@@ -512,7 +535,7 @@ case.
   BEGIN{FIELDWIDTHS = "2 3 6 5 11 2 3 5 6 6 4 3 2"
         print "wavelength,element,ion,intensity"}
 
-  $7 ~ /H |NA|MG|SI|CA|SC|TI|V |CR|MN|FE|CO|NI|SR|Y |BA/ && $5 > 4000 && $5 < 7500 {
+  $7 ~ /H |C |NA|MG|SI|CA|SC|TI|V |CR|MN|FE|CO|NI|SR|Y |BA/ && $5 > 4000 && $5 < 7500 {
       gsub(/ /,"",$3)
       gsub(/ /,"",$7)
       gsub(/ /,"",$8)
@@ -564,17 +587,8 @@ some salient information.
   .import ../output/fraunhofer_pred.dat fraunhofer
   .mode column
 
-  select * from fraunhofer where element = "H";
+  select * from fraunhofer where element = "C";
 #+END_SRC
-
-#+RESULTS[40e18ddd9616f7e70dfddf7514d71154cd4dee39]:
-: wavelength  element     ion         intensity   angle     
-: ----------  ----------  ----------  ----------  ----------
-: 410.174     H           I           15          74.35     
-: 434.047     H           I           30          75.55     
-: 486.133     H           I           80          78.26     
-: 656.272     H           I           120         88.52     
-: 656.285     H           I           180         88.52     
 
 A slightly different example is to look at what is present between the Na D_1 and D_2 lines:
 #+BEGIN_SRC sqlite :db ../output/spectrum.db
@@ -582,16 +596,6 @@ A slightly different example is to look at what is present between the Na D_1 an
   .headers on
   select * from fraunhofer where wavelength > 588.9 and wavelength < 589.6;
 #+END_SRC
-
-#+RESULTS[4fd758d3fff58a32f950fdd3d07b779152dd24dd]:
-: wavelength  element     ion         intensity   angle     
-: ----------  ----------  ----------  ----------  ----------
-: 588.995     Na          I           32          84.14     
-: 589.115     Ti          IV          7           84.15     
-: 589.191     Fe          III         15          84.15     
-: 589.288     Ni          I           10          84.16     
-: 589.394     Y                       24          84.17     
-: 589.592     Na          I           16          84.18     
 
 With the setup, the Ni line is clearly resolved from the two Na lines.
 
