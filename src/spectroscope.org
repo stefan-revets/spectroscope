@@ -48,6 +48,32 @@ its multitude of Fraunhofer absorption lines resides here:
 https://www.noao.edu/image_gallery/html/im0600.html.
 
 * Theory
+:PROPERTIES:
+:session: *R*
+:cache: yes
+:results: output graphics
+:exports: both
+:END:
+We will need some R libraries, so let's load these first
+#+BEGIN_SRC R :results none
+  library("dplyr")
+  library("ggplot2")
+  library("magrittr")
+  library("pracma")
+#+END_SRC
+It will be useful later on to have various parameters and constants of
+the grating in a single spot. According to Edmund Scientific, the
+characteristics of the grating are
+#+BEGIN_SRC R :results none
+  grooves <- 600
+  spacing <- 1 / (grooves * 1e-6)
+  width <- 30
+  blaze_lambda <- 500
+
+  deg2rad <- pi / 180
+  rad2deg <- 180 / pi
+#+END_SRC
+
 Considerations through physical optics easily yield the grating equation
 \begin{equation}
 \label{eqn:grating}
@@ -206,7 +232,7 @@ where
 \label{eqn:complex-fresnel-arguments}
 s_{\pm} & = \sqrt{\frac{k}{\pi \rho'}}(\pm w - x_M) \\
 t_{\pm} & = \sqrt{\frac{k}{\pi \rho'}}(\pm h - y_M) \\
-F(s) & = C(s) + i S(s) = \int_0^s d \sigma e^{i \pi \sigma^2 / 2}
+F(s) & = C(s) + i S(s) = \int_0^s e^{i \pi \sigma^2 / 2} d \sigma
 \end{align*}
 and $F(s)$ is the complex Fresnel integral.
 
@@ -214,13 +240,13 @@ and $F(s)$ is the complex Fresnel integral.
 When a paraxial approximation is no longer tenable, that is to say,
 when the source is too far off the axial line, it is commonly
 suggested that a rotation of the coordinates can alleviate the
-situation, \citep[, for example]{born-wolf99:optics}. Placing the
+situation, \citep[for example]{born-wolf99:optics}. Placing the
 $x'$-axis along the projection of the $P_0 P$ line in the aperture
 plane does yield $m_0' = 0$ so that $I_F(P)$ is of the form of
 equation \ref{eqn:fresnel-independent}. However, the $x', y'$-axes
 are then no longer parallel to the edges of the aperture, and
 therefore the integral is no longer separable because of the
-dependences of the limits of the integrals on the coordinate of the
+dependencies of the limits of the integrals on the coordinate of the
 other.
 
 \citet{mielenz98:fresnel} showed that any attempt to resolve the issue
@@ -251,6 +277,78 @@ and, since $y_0 = y = y_M = 0$
 \theta_M & = \arctan \frac{x_0 - x_M}{z_0} \\
 x & = x_M + z \tan \theta_M
 \end{align*}
+
+Let's see if we can implement these equations into actual
+calculations. To make interpretations, and calculations(!), more
+easily interpretable and consistent, ensure uniform scaling: I'm
+opting here for millimetres. 
+
+To fix ideas, let's see if we can reproduce the graph of
+\citet[fig. 3]{mielenz98:fresnel}, an attempt at reproducing Fresnel's
+original work \citep{fresnel19:diffraction}
+
+#+BEGIN_SRC R :file ../output/fresnel_plot.pdf
+  lambda <- 639e-6
+  halfwidth <- 1
+  z0 <- -2507
+  z <- 1140
+
+  intensity <- data.frame(xM = seq(0, 2 * halfwidth, length = 200)) %>%
+      mutate(
+      thetaM = atan(xM / z0),
+      x = xM + z * tan(thetaM),
+      my_k = sqrt(-2 * (z - z0) * cos(thetaM)/(lambda * z * z0)),
+      sPlus = my_k * (halfwidth - xM),
+      sMin = my_k * (-halfwidth - xM),
+      FPlus = (fresnelC(sPlus) - fresnelC(sMin)) / 2,
+      FMin = (fresnelS(sPlus) - fresnelS(sMin)) / 2,
+      I = 2 * (FPlus^2 + FMin^2))
+
+  ggplot(intensity) +
+      geom_line(aes(xM, I)) +
+      labs(title = "Diffraction by a rectangular slit",
+           x = "X axis (mm)",
+           y = "Intensity")
+#+END_SRC
+
+While the shape of the curve appears to be reproduced correctly, the
+scaling of the X-axis is out of whack. I am assuming that something
+happened when Fresnel's original monograph was translated and adapted,
+as Mielenz relied on a translation which appeared in
+\citet{crew81:wave}: the fact that Mielenz's plot shows the symbol
+$v/u$ for the X-axis suggests that something changed from Fresnel's
+original (all the more so, since Mielenz does not use either $v$ or
+$u$ anywhere in his article).
+
+** van Cittert Approach
+There is an earlier analyses by
+\citet{vancittert30:spaltbreite,vancittert31:spaltbreite}, addressing
+the image formation of a slit more directly.
+
+
+** Resolution
+Resolution is defined as
+\begin{equation}
+R = \frac{\lambda}{d \lambda}
+\end{equation}
+and, in the case of diffraction gratings, we get
+\begin{equation}
+R = \frac{\lambda}{d \lambda} = w \cdot L
+\end{equation}
+with $w$ the total width of the grating and $L$ the number of lines
+per unit length; that is to say, the resolution of a grating is the
+total number of lines exposed to the light beam.
+
+For the grating I have, we get \unit{30}{\milli\metre} $\times$ 600
+lpi, or 18000. That suggests
+
+| wavelength (nm) | theoretical precision (nm) |
+|-----------------+----------------------------|
+|             400 |                      0.022 |
+|             500 |                      0.028 |
+|             600 |                      0.033 |
+|             700 |                      0.039 |
+|             800 |                      0.044 |
 
 * Construction Details
 ** Slit
@@ -300,26 +398,6 @@ capabilities of PSTricks and \LaTeX.
 :END:
 
 ** Calibration and test trials
-We will need some R libraries, so let's load these first
-#+BEGIN_SRC R :results none
-  library("dplyr")
-  library("ggplot2")
-  library("magrittr")
-  library("pracma")
-#+END_SRC
-
-It will be useful later on to have various parameters and constants of
-the grating in a single spot. According to Edmund Scientific, the
-characteristics of the grating are
-#+BEGIN_SRC R :results none
-  grooves <- 600
-  spacing <- 1 / (grooves * 1e-6)
-  width <- 30
-  blaze_lambda <- 500
-
-  deg2rad <- pi / 180
-  rad2deg <- 180 / pi
-#+END_SRC
 
 And here is a set of angular measurements of a number of lines seen in
 the solar spectrum with my spectroscope. 
@@ -404,9 +482,6 @@ reveals the relation
            y = "Discrepancy (degree)")
 #+END_SRC
 
-#+RESULTS[726112933b688c36e9f970f2b94a355e479cebd2]:
-[[file:../output/reflection_test1.pdf]]
-
 Clearly, there is a linear dependence between the angle discrepancy
 and wavelength. That tells us that something is not quite right.  So
 let us try and use these measurements to see how close we are to the
@@ -451,9 +526,6 @@ overall deviations the most), we get
            y = "Discrepancy (degree)")
 
 #+END_SRC
-
-#+RESULTS[a5c9115ba05150aa2c78f19c4a4a027798d825b4]:
-[[file:../output/reflection_test2.pdf]]
 
 A check with a regression should tell us how good these new numbers
 are
@@ -587,7 +659,7 @@ some salient information.
   .import ../output/fraunhofer_pred.dat fraunhofer
   .mode column
 
-  select * from fraunhofer where element = "C";
+  select * from fraunhofer where element = "H";
 #+END_SRC
 
 A slightly different example is to look at what is present between the Na D_1 and D_2 lines:
