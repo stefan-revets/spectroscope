@@ -325,6 +325,104 @@ There is an earlier analyses by
 \citet{vancittert30:spaltbreite,vancittert31:spaltbreite}, addressing
 the image formation of a slit more directly.
 
+\citet{vancittert30:spaltbreite} pointed out the need to distinguish
+between the slit functioning as a incoherent or coherent light
+source. In the former case, it is necessary to integrate the energy
+distribution across the slit, while in the latter case, it is the
+amplitude distribution that requires attention (and hence the
+intensity is to be obtained from squaring the amplitude). In theory,
+it will be the infinitely narrow slit only which fulfills the Huygens'
+principle of generating a pure coherent wavefront. But there is quite
+a bit of leeway in (measurable) practice, so a sufficiently (for a
+given amount of sufficient!) narrow slit can be assumed to generate a
+coherent wavefront.
+
+In the case of a coherent source, the amplitude $A$ is given by
+\begin{equation}
+A_{\phi d} = \frac{1}{\pi} \bigg( Si (\psi_0 - \phi) d + Si (\psi_0 + \phi) d \bigg)
+\end{equation}
+where
+\begin{equation}
+Si(\phi) = \int_0^{\phi} \frac{\sin (t)}{t} d t
+\end{equation}
+and then the intensity is simply $I = A_{\phi d}^2$.
+
+van Cittert defined $\psi_0$ as follows. Since
+\begin{eqnarray}
+\psi_0 & = & \frac{2 \pi \psi'}{\lambda}\\
+2 \psi_0' & = & \frac{B}{f_1}\\
+\frac{2 d}{f_1} & = & \Omega_1\\ 
+\end{eqnarray}
+we get
+\begin{equation}
+\psi_0 d = \frac{\pi}{2} \frac{B}{\lambda} \Omega_1 = \frac{\pi}{2} \nu_1 \Omega_1
+\end{equation}
+where $\Omega_1$ is the f-number of the collimator, and $\nu_1$ stands
+for the slit width expressed in wavelengths.
+
+That suffices to begin calculating the intensity distribution
+#+BEGIN_SRC R :file ../output/vancittert_coherent_overview.pdf
+  psi_name <- c("0.01" = "psi_0 = 0.0",
+                "1.570796" = "psi_0 = pi/2",
+                "3.141593" = "psi_0 = pi",
+                "4.712389" = "psi_0 = 1.5 pi",
+                "6.283185" = "psi_0 = 2 pi",
+                "12.56637" = "psi_0 = 4 pi")
+
+  amplitude <- data.frame(
+      psi0 = 0.01,
+      phi = seq(0, 4 * pi, length = 100)) %>%
+      bind_rows(data.frame(psi0 = 1.570796,
+                           phi = seq(0, 4 * pi, length = 100))) %>%
+      bind_rows(data.frame(psi0 = 3.141593,
+                           phi = seq(0, 4 * pi, length = 100))) %>%
+      bind_rows(data.frame(psi0 = 4.712389,
+                           phi = seq(0, 4 * pi, length = 100))) %>%
+      bind_rows(data.frame(psi0 = 6.283185,
+                           phi = seq(0, 4 * pi, length = 100))) %>%
+      bind_rows(data.frame(psi0 = 12.56637,
+                           phi = seq(0, 4 * pi, length = 100))) %>%
+      mutate(Int = ((Si(psi0 - phi) + Si(psi0 + phi)) / pi)^2)
+
+  ggplot(amplitude) +
+      geom_line(aes(phi / pi, Int)) +
+      facet_wrap(~ psi0, labeller = labeller(psi0 = psi_name)) +
+      labs(title = "Intensity Distribution",
+           x = "phi. d (pi)",
+           y = "Relative Intensity")
+#+END_SRC
+
+These plots show some important features. First of all, there is an
+initial increase in intensity of the central peak as the slit widens,
+up until a point where it decreases again (a case of
+self-reversal). It also shows that with further increases in width,
+additional (local) maxima appear, i.e., the single line becomes a
+multiple (diffraction interferes with the definition of the line).
+
+Let's explore these changes in some more detail. The easiest step is
+to look at the changes in central intensity
+
+#+BEGIN_SRC R :file ../output/vancittert_central.pdf
+  central <- data.frame(
+      psi0 = seq(0, 4 * pi, length = 100)) %>%
+      mutate(Int = (2 * Si(psi0) / pi)^2)
+
+  ggplot(central) +
+      geom_line(aes(psi0 / pi, Int)) +
+      labs(title = "Central Intensity in function of Slit Width",
+           x = "Slit width (psi_0 . d (pi))",
+           y = "Relative Intensity")
+#+END_SRC
+which tells us that the maximum intensity is reached when the width of
+the slit is
+\begin{equation}
+\psi_0 \cdot d = \pi
+\end{equation}
+or, harking back to the earlier definition (slit width in wavelengths)
+\begin{equation}
+\nu_1 = \frac{2}{\Omega_1} = 2 F_1
+\end{equation}
+with $F_1$ the f-number of the collimator.
 
 ** Resolution
 Resolution is defined as
@@ -357,20 +455,17 @@ emission of absorption lines in a spectrum
 \citep{schuster05:spectroscope,vancittert30:spaltbreite,vancittert31:spaltbreite}. The
 derivations by \citet{vancittert30:spaltbreite} eventually come to the
 conclusion that the optimum width of the slit depends on the focal
-ratio of the collimator, the wavelength, and (in)coherence of the
-light beam hitting the slit. For incoherent light, he obtains
+ratio of the collimator and of course the wavelength
 \begin{equation}
-w = F \lambda
-\end{equation}
-where $F$ is the F-number of the collimator. For coherent light, he
-obtains double this number.
-
-In principle, for my bits and pieces at hand, this translates to
-\begin{equation}
-w = F \lambda = \frac{\unit{135}{\milli\metre}}{\unit{30}{\milli\metre}} \unit{500}{\nano\metre} = \unit{2.25}{\micro\metre}
+\nu_1 = \frac{2}{\Omega_1} = 2 F_1
 \end{equation}
 
-In practice, such fine slits are beyond reach, and we are looking at
+For my bits and pieces at hand, this translates to
+\begin{equation}
+w = 2 F_1 \lambda = 2 \frac{\unit{135}{\milli\metre}}{\unit{30}{\milli\metre}} \unit{500}{\nano\metre} = \unit{4.5}{\micro\metre}
+\end{equation}
+
+Such a fine slit is not easily made, so we may well be looking at
 widths in the order of 10's of \micro\metre. Here, a couple of razor
 blades proved to be very effective: one blade is glued down on a
 support (a piece of hardboard with a \unit{5}{\milli\metre} wide hole)
